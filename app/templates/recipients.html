@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Bildirim Alıcıları</h3>
+<p class="pas">Bildirimler, burada ekli ve aktif olan tüm hesaplara gönderilir.</p>
+
+<div class="card" style="margin-bottom:18px">
+  <b>Yeni hesap nasıl eklenir?</b>
+  <ol style="margin:8px 0 0 18px; padding:0; font-size:14px; line-height:1.7">
+    <li>Eklemek istediğin hesapla Telegram'da <b>@canturk_lead_bot</b>'a gir ve <b>/start</b> yaz. (Şart — bot, /start dememiş hesaba mesaj atamaz.)</li>
+    <li>O hesabın <b>chat_id</b>'sini öğren: <b>@userinfobot</b>'a gir, <b>/start</b> de, çıkan <b>Id</b> değerini kopyala.</li>
+    <li>Aşağıya o chat_id'yi ve bir isim (örn. "İkinci Hesap") yazıp <b>Ekle</b>'ye bas.</li>
+  </ol>
+</div>
+
+<form class="satir" method="post" action="/recipients/add">
+  <input type="text" name="chat_id" placeholder="chat_id (örn. 8015832764)" required style="width:220px">
+  <input type="text" name="label" placeholder="İsim (örn. İkinci Hesap)" style="flex:1">
+  <button class="btn" type="submit">Ekle</button>
+</form>
+
+<table>
+  <tr><th>İsim</th><th>chat_id</th><th>Durum</th><th style="width:230px">İşlem</th></tr>
+  {% for r in recipients %}
+  <tr>
+    <td>{{ r.label or "-" }}</td>
+    <td>{{ r.chat_id }}</td>
+    <td>{% if r.active %}<span class="tik">Aktif</span>{% else %}<span class="pas">Kapalı</span>{% endif %}</td>
+    <td>
+      <form method="post" action="/recipients/{{ r.id }}/toggle" style="display:inline">
+        <button class="btn gri kucuk" type="submit">{% if r.active %}Kapat{% else %}Aç{% endif %}</button>
+      </form>
+      <form method="post" action="/recipients/{{ r.id }}/delete" style="display:inline"
+            onsubmit="return confirm('Bu alıcı silinsin mi?')">
+        <button class="btn kucuk" type="submit">Sil</button>
+      </form>
+    </td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4" class="pas">Henüz alıcı yok.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}
