@@ -1,6 +1,6 @@
 import httpx
 
-from . import config
+from . import config, db
 
 
 def esc(s):
@@ -23,21 +23,52 @@ def format_lead(lead):
     )
 
 
+def build_buttons(lead):
+    row = []
+    username = lead.get("username")
+    uid = lead.get("tg_user_id")
+    if username:
+        row.append({"text": "👤 Kisiye Git", "url": f"https://t.me/{username}"})
+    elif uid:
+        row.append({"text": "👤 Kisiye Git", "url": f"tg://user?id={uid}"})
+    link = lead.get("message_link")
+    if link:
+        row.append({"text": "💬 Mesaji Gor", "url": link})
+    if not row:
+        return None
+    return {"inline_keyboard": [row]}
+
+
 async def send_notification(lead):
-    if not config.BOT_TOKEN or not config.NOTIFY_CHAT_ID:
-        print("[notifier] BOT_TOKEN veya NOTIFY_CHAT_ID eksik, bildirim atlanadi.")
+    if not config.BOT_TOKEN:
+        print("[notifier] BOT_TOKEN eksik, bildirim atlanadi.")
         return
+
+    # Aktif alicilari veritabanindan al
+    recipients = db.get_active_recipient_ids()
+    if not recipients and config.NOTIFY_CHAT_ID:
+        recipients = [str(config.NOTIFY_CHAT_ID)]
+    if not recipients:
+        print("[notifier] aktif alici yok, bildirim atlanadi.")
+        return
+
     url = f"https://api.telegram.org/bot{config.BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": config.NOTIFY_CHAT_ID,
-        "text": format_lead(lead),
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-    }
-    try:
-        async with httpx.AsyncClient(timeout=20) as client:
-            r = await client.post(url, json=payload)
-            if r.status_code != 200:
-                print(f"[notifier] bildirim hatasi: {r.status_code} {r.text}")
-    except Exception as e:
-        print(f"[notifier] bildirim gonderilemedi: {e}")
+    text = format_lead(lead)
+    markup = build_buttons(lead)
+
+    async with httpx.AsyncClient(timeout=20) as client:
+        for chat_id in recipients:
+            payload = {
+                "chat_id": chat_id,
+                "text": text,
+                "parse_mode": "HTML",
+                "disable_web_page_preview": True,
+            }
+            if markup:
+                payload["reply_markup"] = markup
+            try:
+                r = await client.post(url, json=payload)
+                if r.status_code != 200:
+                    print(f"[notifier] {chat_id} hata: {r.status_code} {r.text}")
+            except Exception as e:
+                print(f"[notifier] {chat_id} gonderilemedi: {e}")

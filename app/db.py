@@ -82,7 +82,17 @@ def init_db():
                 created_at TIMESTAMPTZ NOT NULL DEFAULT now()
             );
         """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS recipients (
+                id SERIAL PRIMARY KEY,
+                chat_id TEXT NOT NULL UNIQUE,
+                label TEXT,
+                active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            );
+        """)
     _seed_keywords()
+    _seed_recipients()
 
 
 def _seed_keywords():
@@ -95,6 +105,21 @@ def _seed_keywords():
                     "INSERT INTO keywords(term) VALUES (%s) ON CONFLICT DO NOTHING;",
                     (k,),
                 )
+
+
+def _seed_recipients():
+    # NOTIFY_CHAT_ID'yi varsayilan alici olarak ekle (tablo bossa)
+    if not config.NOTIFY_CHAT_ID:
+        return
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM recipients;")
+        if cur.fetchone()[0] == 0:
+            cur.execute(
+                "INSERT INTO recipients(chat_id, label) VALUES (%s, %s) "
+                "ON CONFLICT (chat_id) DO NOTHING;",
+                (str(config.NOTIFY_CHAT_ID), "Ana hesap"),
+            )
 
 
 # ---------- keywords ----------
@@ -133,6 +158,45 @@ def delete_keyword(kid):
     with get_conn() as conn:
         cur = conn.cursor()
         cur.execute("DELETE FROM keywords WHERE id = %s;", (kid,))
+
+
+# ---------- recipients (bildirim aliciları) ----------
+def get_active_recipient_ids():
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT chat_id FROM recipients WHERE active = TRUE;")
+        return [r[0] for r in cur.fetchall()]
+
+
+def list_recipients():
+    with get_conn() as conn:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT * FROM recipients ORDER BY created_at;")
+        return cur.fetchall()
+
+
+def add_recipient(chat_id, label=""):
+    if not chat_id:
+        return
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO recipients(chat_id, label) VALUES (%s, %s) "
+            "ON CONFLICT (chat_id) DO NOTHING;",
+            (str(chat_id).strip(), label),
+        )
+
+
+def toggle_recipient(rid):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("UPDATE recipients SET active = NOT active WHERE id = %s;", (rid,))
+
+
+def delete_recipient(rid):
+    with get_conn() as conn:
+        cur = conn.cursor()
+        cur.execute("DELETE FROM recipients WHERE id = %s;", (rid,))
 
 
 # ---------- leads ----------

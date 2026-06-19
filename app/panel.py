@@ -70,6 +70,33 @@ def keywords_delete(kid: int, user: str = Depends(auth)):
     return RedirectResponse("/keywords", status_code=303)
 
 
+# ---------- bildirim aliciları ----------
+@app.get("/recipients", response_class=HTMLResponse)
+def recipients_page(request: Request, user: str = Depends(auth)):
+    recs = db.list_recipients()
+    return templates.TemplateResponse(
+        "recipients.html", {"request": request, "recipients": recs}
+    )
+
+
+@app.post("/recipients/add")
+def recipients_add(chat_id: str = Form(...), label: str = Form(""), user: str = Depends(auth)):
+    db.add_recipient(chat_id.strip(), label.strip())
+    return RedirectResponse("/recipients", status_code=303)
+
+
+@app.post("/recipients/{rid}/toggle")
+def recipients_toggle(rid: int, user: str = Depends(auth)):
+    db.toggle_recipient(rid)
+    return RedirectResponse("/recipients", status_code=303)
+
+
+@app.post("/recipients/{rid}/delete")
+def recipients_delete(rid: int, user: str = Depends(auth)):
+    db.delete_recipient(rid)
+    return RedirectResponse("/recipients", status_code=303)
+
+
 @app.get("/leads", response_class=HTMLResponse)
 def leads_page(request: Request, q: str = "", user: str = Depends(auth)):
     leads = db.list_leads(limit=300, q=q)
@@ -82,7 +109,7 @@ def leads_page(request: Request, q: str = "", user: str = Depends(auth)):
 def leads_export(user: str = Depends(auth)):
     rows = db.list_leads(limit=100000)
     buf = io.StringIO()
-    buf.write("\ufeff")  # Excel'de Turkce karakterler icin BOM
+    buf.write("\ufeff")
     w = csv.writer(buf)
     w.writerow(["Tarih", "Ad Soyad", "Kullanici adi", "Grup", "Kelime", "Mesaj", "Link"])
     for r in rows:
