@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:
+    build: .
+    restart: unless-stopped
+    command: python -m app.listener
+    environment:
+      API_ID: ${API_ID}
+      API_HASH: ${API_HASH}
+      BOT_TOKEN: ${BOT_TOKEN}
+      NOTIFY_CHAT_ID: ${NOTIFY_CHAT_ID}
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DEDUP_DAYS: ${DEDUP_DAYS}
+      RETENTION_DAYS: ${RETENTION_DAYS}
+      SESSION_DIR: /session
+    volumes:
+      - session:/session
+    depends_on:
+      - db
+
+  panel:
+    build: .
+    restart: unless-stopped
+    command: uvicorn app.panel:app --host 0.0.0.0 --port 8080
+    environment:
+      PANEL_USER: ${PANEL_USER}
+      PANEL_PASSWORD: ${PANEL_PASSWORD}
+      POSTGRES_HOST: db
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      RETENTION_DAYS: ${RETENTION_DAYS}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+  session:
