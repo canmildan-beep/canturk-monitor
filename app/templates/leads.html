@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Tüm Kayıtlar</h3>
+
+<form class="satir" method="get" action="/leads">
+  <input type="text" name="q" value="{{ q }}" placeholder="Ara: isim, kullanıcı adı, grup, mesaj..." style="flex:1">
+  <button class="btn" type="submit">Ara</button>
+  <a class="btn gri" href="/leads">Temizle</a>
+  <a class="btn" href="/leads/export.csv">CSV İndir</a>
+</form>
+
+<table>
+  <tr><th>Tarih</th><th>Kişi</th><th>Grup</th><th>Kelime</th><th>Mesaj</th><th></th></tr>
+  {% for l in leads %}
+  <tr>
+    <td>{{ l.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+    <td>{{ l.full_name }}<br>
+      {% if l.username %}<span class="pas">@{{ l.username }}</span>{% endif %}</td>
+    <td>{{ l.chat_title }}</td>
+    <td>{{ l.matched_keyword }}</td>
+    <td>{{ l.message_text[:200] }}</td>
+    <td>{% if l.message_link %}<a class="link" href="{{ l.message_link }}" target="_blank">aç</a>{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="pas">Kayıt bulunamadı.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="cards">
+  <div class="card"><div class="n">{{ stats.total }}</div><div class="l">Toplam kayıt</div></div>
+  <div class="card"><div class="n">{{ stats.today }}</div><div class="l">Son 24 saat</div></div>
+  <div class="card"><div class="n">{{ stats.active_keywords }}</div><div class="l">Aktif anahtar kelime</div></div>
+</div>
+
+<h3>Son kayıtlar</h3>
+<table>
+  <tr><th>Tarih</th><th>Kişi</th><th>Grup</th><th>Kelime</th><th>Mesaj</th><th></th></tr>
+  {% for l in leads %}
+  <tr>
+    <td>{{ l.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+    <td>{{ l.full_name }}<br>
+      {% if l.username %}<span class="pas">@{{ l.username }}</span>{% endif %}</td>
+    <td>{{ l.chat_title }}</td>
+    <td>{{ l.matched_keyword }}</td>
+    <td>{{ l.message_text[:120] }}</td>
+    <td>{% if l.message_link %}<a class="link" href="{{ l.message_link }}" target="_blank">aç</a>{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="pas">Henüz kayıt yok. Sistem çalışıyor, eşleşme oldukça burada görünecek.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

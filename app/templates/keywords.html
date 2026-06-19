@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Anahtar Kelimeler</h3>
+<p class="pas">Bir mesajda bu kelimelerden biri geçerse kayıt oluşturulur. Türkçe ve Rusça yazabilirsiniz.</p>
+
+<form class="satir" method="post" action="/keywords/add">
+  <input type="text" name="term" placeholder="Yeni kelime (örn. ВНЖ, ikamet, çalışma izni)" required style="flex:1">
+  <button class="btn" type="submit">Ekle</button>
+</form>
+
+<table>
+  <tr><th>Kelime</th><th>Durum</th><th style="width:230px">İşlem</th></tr>
+  {% for k in keywords %}
+  <tr>
+    <td>{{ k.term }}</td>
+    <td>{% if k.active %}<span class="tik">Aktif</span>{% else %}<span class="pas">Kapalı</span>{% endif %}</td>
+    <td>
+      <form method="post" action="/keywords/{{ k.id }}/toggle" style="display:inline">
+        <button class="btn gri kucuk" type="submit">{% if k.active %}Kapat{% else %}Aç{% endif %}</button>
+      </form>
+      <form method="post" action="/keywords/{{ k.id }}/delete" style="display:inline"
+            onsubmit="return confirm('Bu kelime silinsin mi?')">
+        <button class="btn kucuk" type="submit">Sil</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

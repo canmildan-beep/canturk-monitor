@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cantürk Lead Panel</title>
+  <style>
+    :root { --kirmizi:#c8102e; --koyu:#1a1a1a; --gri:#f4f4f5; --kenar:#e4e4e7; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+           background:var(--gri); color:var(--koyu); }
+    header { background:var(--kirmizi); color:#fff; padding:14px 22px;
+             display:flex; align-items:center; gap:22px; }
+    header h1 { font-size:18px; margin:0; font-weight:700; }
+    header a { color:#fff; text-decoration:none; opacity:.9; font-size:15px; }
+    header a:hover { opacity:1; text-decoration:underline; }
+    .wrap { max-width:1050px; margin:22px auto; padding:0 18px; }
+    .cards { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:22px; }
+    .card { background:#fff; border:1px solid var(--kenar); border-radius:12px;
+            padding:18px 22px; flex:1; min-width:160px; }
+    .card .n { font-size:30px; font-weight:800; color:var(--kirmizi); }
+    .card .l { font-size:13px; color:#666; margin-top:4px; }
+    table { width:100%; border-collapse:collapse; background:#fff;
+            border:1px solid var(--kenar); border-radius:12px; overflow:hidden; }
+    th,td { text-align:left; padding:10px 12px; font-size:14px;
+            border-bottom:1px solid var(--kenar); vertical-align:top; }
+    th { background:#fafafa; font-size:12px; text-transform:uppercase; color:#666; }
+    tr:last-child td { border-bottom:none; }
+    .btn { display:inline-block; background:var(--kirmizi); color:#fff; border:none;
+           padding:9px 16px; border-radius:8px; cursor:pointer; font-size:14px;
+           text-decoration:none; }
+    .btn.gri { background:#e4e4e7; color:#333; }
+    .btn.kucuk { padding:5px 10px; font-size:13px; }
+    input[type=text] { padding:9px 12px; border:1px solid var(--kenar);
+                       border-radius:8px; font-size:14px; }
+    form.satir { display:flex; gap:8px; margin-bottom:18px; }
+    .pas { color:#999; }
+    .tik { color:#16a34a; font-weight:700; }
+    a.link { color:var(--kirmizi); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🔴 Cantürk Lead Panel</h1>
+    <a href="/">Panel</a>
+    <a href="/keywords">Anahtar Kelimeler</a>
+    <a href="/leads">Tüm Kayıtlar</a>
+    <a href="/leads/export.csv">CSV İndir</a>
+  </header>
+  <div class="wrap">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>
